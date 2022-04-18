@@ -111,7 +111,7 @@ class _AddState extends State<Add> {
                 backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
               ),
               child: const Text(
-                'Add to Firebase',
+                'Add to FireBase',
                 style: TextStyle(color: Colors.white),
               ),
               onPressed: () {
