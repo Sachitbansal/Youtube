@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:youtubefianal/update.dart';
 import 'add.dart';
 import 'package:sizer/sizer.dart';
 import 'login.dart';
@@ -142,7 +143,19 @@ class _HomeState extends State<Home> {
                                     IconButton(
                                       icon: Icon(Icons.edit, size: 20.sp),
                                       onPressed: () {
-                                        // Todo: Implement Edit Functionality
+
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                Update(
+                                                  id: storedocs[i]
+                                                  ['id'],
+                                                  collection: widget.id
+                                                      .toString(),
+                                                ),
+                                          ),
+                                        );
                                       },
                                     ),
                                   ],
