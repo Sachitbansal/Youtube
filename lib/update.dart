@@ -69,9 +69,7 @@ class _UpdateState extends State<Update> {
                   children: [
                     TextButton(
                       style: ButtonStyle(
-                        backgroundColor: trueFalse == 'True'
-                            ? MaterialStateProperty.all<Color>(Colors.green[200]!)
-                            : MaterialStateProperty.all<Color>(Colors.white),
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.grey[300]!),
                       ),
                       child: const Text('True'),
                       onPressed: () {
@@ -80,9 +78,7 @@ class _UpdateState extends State<Update> {
                     ),
                     TextButton(
                       style: ButtonStyle(
-                        backgroundColor: trueFalse == 'False'
-                            ? MaterialStateProperty.all<Color>(Colors.green[200]!)
-                            : MaterialStateProperty.all<Color>(Colors.white),
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.grey[300]!),
                       ),
                       child: const Text('False'),
                       onPressed: () {
@@ -114,7 +110,6 @@ class _UpdateState extends State<Update> {
                 ),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // var String fText = textController.text;
                     updateUser(widget.id, textController.text, trueFalse);
                     Navigator.pop(context);
                   }
