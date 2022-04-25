@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:sizer/sizer.dart';
 
 class Add extends StatefulWidget {
   const Add({
@@ -25,38 +29,86 @@ class _AddState extends State<Add> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final CollectionReference reference =
-        FirebaseFirestore.instance.collection(widget.id);
+  showSnackBar(String snackText, Duration d) {
+    final snackBar = SnackBar(content: Text(snackText), duration: d);
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 
-    Object Add() {
-      try {
-        return reference.add({
-          'trueOrFalse': trueFalse,
-          'text': text,
-        }).then(
-          (value) => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Uploaded'),
-            ),
-          ),
-        );
-      } on FirebaseException catch (e) {
-        return ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.code),
-          ),
-        );
+  List<XFile>? _image;
+  final imagePicker = ImagePicker();
+  List<String> downloadURL = [];
+  List<String> urls = [];
+  var isLoading = false;
+  int uploadItem = 0;
+  UploadTask? uploadTask;
+
+  Future imagePickerMethod() async {
+    final pick = await imagePicker.pickMultiImage();
+    setState(() {
+      if (pick != null) {
+        _image = pick;
+      } else {
+        showSnackBar("No File selected", const Duration(milliseconds: 400));
       }
+    });
+  }
 
+  void uploadFunction(List<XFile> images) async {
+    setState(() {
+      isLoading = true;
+    });
+    for (int i = 0; i < images.length; i++) {
+      var imgUrl = await uploadFile(images[i]);
+      urls.add(imgUrl.toString());
     }
 
+    Add().whenComplete(() {
+      urls.clear();
+      setState(() {
+        isLoading = true;
+      });
+    });
+  }
+
+  Future<String> uploadFile(XFile images) async {
+    final imgId = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference reference = FirebaseStorage.instance
+        .ref()
+        .child(widget.id.toString())
+        .child("post_$imgId");
+    uploadTask = reference.putFile(File(images.path));
+    await uploadTask?.whenComplete(() {
+      setState(() {
+        isLoading = false;
+      });
+    });
+    // print(await reference.getDownloadURL());
+    return await reference.getDownloadURL();
+  }
+
+  Future<void> Add() {
+    final CollectionReference reference =
+        FirebaseFirestore.instance.collection(widget.id);
+    return reference.add({
+      'trueOrFalse': trueFalse,
+      'text': text,
+      'image': urls
+    }).then(
+      (value) => ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Uploaded'),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add'),
       ),
-      body: Form(
+      body: isLoading ? const Center(child: CircularProgressIndicator(),) : Form(
         key: _formKey,
         child: Column(
           children: [
@@ -106,6 +158,29 @@ class _AddState extends State<Add> {
                 },
               ),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.blue[200]!),
+                    alignment: Alignment.center,
+                  ),
+                  onPressed: imagePickerMethod,
+                  child: SizedBox(
+                    height: 40,
+                    width: 70.w,
+                    child: const Center(
+                      child: Text(
+                        'Pick Images',
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             TextButton(
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
@@ -118,8 +193,8 @@ class _AddState extends State<Add> {
                 if (_formKey.currentState!.validate()) {
                   setState(() {
                     text = textController.text;
+                    uploadFunction(_image!);
                   });
-                  Add();
                 }
               },
             )

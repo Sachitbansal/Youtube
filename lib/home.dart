@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:youtubefianal/update.dart';
 import 'add.dart';
 import 'package:sizer/sizer.dart';
 import 'login.dart';
@@ -25,11 +27,16 @@ class _HomeState extends State<Home> {
         FirebaseFirestore.instance.collection(widget.id.toString()).snapshots();
 
     return Sizer(builder: (context, orientation, deviceType) {
-      CollectionReference DataRef =
+      CollectionReference dataRef =
           FirebaseFirestore.instance.collection(widget.id.toString());
 
-      Future<void> deleteUser(id) {
-        return DataRef.doc(id).delete();
+      Future<void> deleteUser(String id, List urls) async {
+        dataRef.doc(id).delete();
+
+        for (var url = 0; url < urls.length; url++) {
+          await FirebaseStorage.instance.refFromURL(urls[url]).delete();
+        }
+
       }
 
       return Scaffold(
@@ -86,68 +93,105 @@ class _HomeState extends State<Home> {
                       a['id'] = document.id;
                     }).toList();
 
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        storedocs.length,
-                        (i) => Center(
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: Colors.lightBlueAccent[100],
-                                borderRadius: BorderRadius.circular(10)),
-                            height: 120,
-                            width: 90.w,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 2.w, vertical: 1.h),
-                            margin: EdgeInsets.symmetric(
-                                horizontal: 1.w, vertical: 1.h),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Text: ${storedocs[i]['text']}",
-                                      style: TextStyle(fontSize: 15.sp),
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    Text(
-                                      storedocs[i]['trueOrFalse'],
-                                      style: TextStyle(fontSize: 15.sp),
-                                    )
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        size: 20.sp,
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          storedocs.length,
+                          (i) => Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.lightBlueAccent[100],
+                                  borderRadius: BorderRadius.circular(10)),
+                              height: 120,
+                              width: 90.w,
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 1.w, vertical: 1.h),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                    width: 120,
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: List.generate(
+                                          storedocs[i]['image'].length,
+                                          (index) => Container(
+                                            height: 120,
+                                            width: 120,
+                                            decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: NetworkImage(
+                                                  storedocs[i]['image'][index],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      onPressed: () {
-                                        deleteUser(storedocs[i]['id'])
-                                            .then((value) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                            content: Text("Deleted"),
-                                            duration:
-                                                Duration(milliseconds: 1000),
-                                          ));
-                                        });
-                                      },
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.edit, size: 20.sp),
-                                      onPressed: () {
-                                        // Todo: Implement Edit Functionality
-                                      },
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Text: ${storedocs[i]['text']}",
+                                          style: TextStyle(fontSize: 15.sp),
+                                        ),
+                                        const SizedBox(
+                                          height: 20,
+                                        ),
+                                        Text(
+                                          storedocs[i]['trueOrFalse'],
+                                          style: TextStyle(fontSize: 15.sp),
+                                        )
+                                      ],
                                     ),
-                                  ],
-                                )
-                              ],
+                                  ),
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          size: 20.sp,
+                                        ),
+                                        onPressed: () {
+                                          deleteUser(storedocs[i]['id'], storedocs[i]['image'])
+                                              .then((value) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(const SnackBar(
+                                              content: Text("Deleted"),
+                                              duration:
+                                                  Duration(milliseconds: 1000),
+                                            ));
+                                          });
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.edit, size: 20.sp),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => Update(
+                                                id: storedocs[i]['id'],
+                                                collection:
+                                                    widget.id.toString(),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                         ),
