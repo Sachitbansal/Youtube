@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:youtubefianal/update.dart';
 import 'add.dart';
@@ -26,11 +27,16 @@ class _HomeState extends State<Home> {
         FirebaseFirestore.instance.collection(widget.id.toString()).snapshots();
 
     return Sizer(builder: (context, orientation, deviceType) {
-      CollectionReference DataRef =
+      CollectionReference dataRef =
           FirebaseFirestore.instance.collection(widget.id.toString());
 
-      Future<void> deleteUser(id) {
-        return DataRef.doc(id).delete();
+      Future<void> deleteUser(String id, List urls) async {
+        dataRef.doc(id).delete();
+
+        for (var url = 0; url < urls.length; url++) {
+          await FirebaseStorage.instance.refFromURL(urls[url]).delete();
+        }
+
       }
 
       return Scaffold(
@@ -105,6 +111,29 @@ class _HomeState extends State<Home> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                SizedBox(
+                                  width: 120,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: List.generate(
+                                        storedocs[i]['image'].length,
+                                            (index) => Container(
+                                          height: 120,
+                                          width: 120,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              fit: BoxFit.cover,
+                                              image: NetworkImage(
+                                                storedocs[i]['image'][index],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -129,7 +158,7 @@ class _HomeState extends State<Home> {
                                         size: 20.sp,
                                       ),
                                       onPressed: () {
-                                        deleteUser(storedocs[i]['id'])
+                                        deleteUser(storedocs[i]['id'], storedocs[i]['image'])
                                             .then((value) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(const SnackBar(
