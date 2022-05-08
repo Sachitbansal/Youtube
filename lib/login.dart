@@ -133,16 +133,17 @@ class _LoginState extends State<Login> {
                   auth.signInWithCredential(GoogleAuthProvider.credential(
                     accessToken: googleAuth.accessToken,
                     idToken: googleAuth.idToken
-                  ));
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Home(
-                        id: userObj.id,
+                  )).whenComplete(() {
+                    setState((){});
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Home(
+                          id: userObj.id,
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  });
                 },
               )
             ],
