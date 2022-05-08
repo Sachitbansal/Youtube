@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sizer/sizer.dart';
 
 class Add extends StatefulWidget {
   const Add({
@@ -62,7 +60,7 @@ class _AddState extends State<Add> {
       urls.add(imgUrl.toString());
     }
 
-    Add().whenComplete(() {
+    add().whenComplete(() {
       urls.clear();
       setState(() {
         isLoading = true;
@@ -86,7 +84,7 @@ class _AddState extends State<Add> {
     return await reference.getDownloadURL();
   }
 
-  Future<void> Add() {
+  Future<void> add() {
     final CollectionReference reference =
         FirebaseFirestore.instance.collection(widget.id);
     return reference.add({
@@ -168,10 +166,10 @@ class _AddState extends State<Add> {
                     alignment: Alignment.center,
                   ),
                   onPressed: imagePickerMethod,
-                  child: SizedBox(
+                  child: const SizedBox(
                     height: 40,
-                    width: 70.w,
-                    child: const Center(
+                    width: 350,
+                    child: Center(
                       child: Text(
                         'Pick Images',
                         style: TextStyle(color: Colors.white, fontSize: 20),
