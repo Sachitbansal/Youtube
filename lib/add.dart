@@ -4,7 +4,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sizer/sizer.dart';
 
 class Add extends StatefulWidget {
   const Add({
@@ -168,10 +167,10 @@ class _AddState extends State<Add> {
                 alignment: Alignment.center,
               ),
               onPressed: imagePickerMethod,
-              child: SizedBox(
+              child: const SizedBox(
                 height: 40,
-                width: 70.w,
-                child: const Center(
+                width: 300,
+                child: Center(
                   child: Text(
                     'Pick Images',
                     style: TextStyle(color: Colors.white, fontSize: 20),
