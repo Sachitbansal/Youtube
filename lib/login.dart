@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:youtubefianal/reset_pass.dart';
 import 'package:youtubefianal/signin.dart';
 
 import 'home.dart';
@@ -32,19 +33,23 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     Future<void> login() async {
       try {
-        await auth.signInWithEmailAndPassword(email: email, password: pass);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Home(
-              id: FirebaseAuth.instance.currentUser!.uid,
+        await auth
+            .signInWithEmailAndPassword(email: email, password: pass)
+            .whenComplete(() {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Home(
+                id: FirebaseAuth.instance.currentUser!.uid,
+              ),
             ),
-          ),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Signed In"),
-          duration: Duration(milliseconds: 1000),
-        ));
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Signed In"),
+            duration: Duration(milliseconds: 1000),
+          ));
+        });
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Failed with code: ${e.code}"),
@@ -79,6 +84,7 @@ class _LoginState extends State<Login> {
                       .hasMatch(value)) {
                     return 'Please enter a valid Email';
                   }
+                  return null;
                 },
               ),
               TextFormField(
@@ -103,6 +109,17 @@ class _LoginState extends State<Login> {
                 },
               ),
               TextButton(
+                child: const Text('Reset Password'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ResetPassword(),
+                    ),
+                  );
+                },
+              ),
+              TextButton(
                 child: const Text('Sign Up'),
                 onPressed: () {
                   Navigator.push(
@@ -113,28 +130,29 @@ class _LoginState extends State<Login> {
                   );
                 },
               ),
-
               const SizedBox(
                 height: 30,
               ),
               TextButton(
                 child: const Text('Google Sign In'),
                 onPressed: () async {
-
-                  final GoogleSignInAccount googleUser = await GoogleSignIn().signIn().then((value) {
+                  final GoogleSignInAccount googleUser =
+                      await GoogleSignIn().signIn().then((value) {
                     setState(() {
                       userObj = value!;
                     });
                     return userObj;
                   });
 
-                  final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+                  final GoogleSignInAuthentication googleAuth =
+                      await googleUser.authentication;
 
-                  auth.signInWithCredential(GoogleAuthProvider.credential(
-                    accessToken: googleAuth.accessToken,
-                    idToken: googleAuth.idToken
-                  )).whenComplete(() {
-                    setState((){});
+                  auth
+                      .signInWithCredential(GoogleAuthProvider.credential(
+                          accessToken: googleAuth.accessToken,
+                          idToken: googleAuth.idToken))
+                      .whenComplete(() {
+                    setState(() {});
                     Navigator.push(
                       context,
                       MaterialPageRoute(
